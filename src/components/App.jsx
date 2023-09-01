@@ -20,7 +20,6 @@ export class App extends Component {
 
   componentDidUpdate = async (prevProps, prevState) => {
     const { page, search } = this.state;
-    console.log(this.state.total);
     if (prevState.page !== page) {
       try {
         this.setState({ loading: true, error: false });
@@ -40,12 +39,10 @@ export class App extends Component {
   handleSubmit = async (evt) => {
     evt.preventDefault();
     const { search } = evt.currentTarget;
-    console.log(search.value);
     const searchValue = search.value.trim();
-    console.log(searchValue);
     try {
-      this.setState({ loading: true, error: false, page: 1, });
-      const { hits, totalHits } = await serviceSearch(searchValue, this.state.page);
+      this.setState({ loading: true, error: false });
+      const { hits, totalHits } = await serviceSearch(searchValue, this.state.page = 1);
       this.setState({
         images: hits,
         search: searchValue,
@@ -59,13 +56,15 @@ export class App extends Component {
     evt.target.reset();
   }
 
-  handleClick = () => {
-    this.setState({
-      page: this.state.page + 1,
-    })
+  handleClickLoad = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }))
+  };
 
-
-  }
+  // handleClickImage = (id) => {
+  //   this.state.images.map(image => image.id === id)
+  // }
 
   render() {
     const { images, page, total, loading } = this.state;
@@ -79,11 +78,12 @@ export class App extends Component {
             <ImageGalleryItem key={id}
               webformatURL={webformatURL}
               tags={tags}
+
             />
           ))}
         </ImageGallery>
         {loading && <Loader />}
-        {images.length !== 0 && page < total / 12 && <Button onClick={this.handleClick} />}
+        {images.length !== 0 && page < total / 12 && <Button onClick={this.handleClickLoad} />}
         <GlobalStyle />
       </Layuot>
     );
