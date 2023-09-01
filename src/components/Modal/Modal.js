@@ -1,12 +1,12 @@
 
 import { Div, Overlay } from "./Modal.styled";
 
-export const Modal = () => {
+export const Modal = ({ largeImageURL, tags, onClick }) => {
     return (
-        <Overlay>
+        <Overlay onClick={onClick}>
             <Div>
-                <img src="" alt="" />
+                <img src={largeImageURL} alt={tags} />
             </Div>
         </Overlay>
     )
-};
+}; 

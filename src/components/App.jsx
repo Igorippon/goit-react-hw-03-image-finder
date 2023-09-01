@@ -7,15 +7,18 @@ import { ImageGalleryItem } from "./ImageGalleryItem/ImageGalleryItem";
 import { serviceSearch } from "api";
 import { Button } from "./Button/Button.js";
 import { Loader } from "./Loader/Loader";
+import { Modal } from "./Modal/Modal";
 
 export class App extends Component {
   state = {
     page: 1,
     search: '',
     images: [],
+    image: {},
     total: 0,
     loading: false,
-    error: false
+    error: false,
+    modal: false,
   };
 
   componentDidUpdate = async (prevProps, prevState) => {
@@ -62,12 +65,18 @@ export class App extends Component {
     }))
   };
 
-  // handleClickImage = (id) => {
-  //   this.state.images.map(image => image.id === id)
-  // }
+  handleClickImage = (id) => {
+    const image = this.state.images.find(image => image.id === id)
+    this.setState({ image: image, modal: true });
+    console.log(image)
+  }
+
+  handleClickModal = () => {
+    this.setState({ modal: false })
+  }
 
   render() {
-    const { images, page, total, loading } = this.state;
+    const { images, image, page, total, loading, modal } = this.state;
 
     return (
       <Layuot>
@@ -78,12 +87,18 @@ export class App extends Component {
             <ImageGalleryItem key={id}
               webformatURL={webformatURL}
               tags={tags}
-
+              onClick={this.handleClickImage}
+              id={id}
             />
           ))}
         </ImageGallery>
         {loading && <Loader />}
         {images.length !== 0 && page < total / 12 && <Button onClick={this.handleClickLoad} />}
+        {modal && <Modal
+          largeImageURL={image.largeImageURL}
+          tags={image.tags}
+          onClick={this.handleClickModal}
+        />}
         <GlobalStyle />
       </Layuot>
     );
