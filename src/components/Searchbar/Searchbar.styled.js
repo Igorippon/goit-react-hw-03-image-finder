@@ -20,7 +20,7 @@ border-radius: 4px 0 0 4px;
 `;
 
 export const Span = styled.span`
-font-weight: 700;
+font-weight:500px;
 color: rgb(58, 62, 138);
 `;
 

@@ -1,9 +1,10 @@
+import { List } from "./ImageGallery.styled"
 
 
 export const ImageGallery = ({ children }) => {
     return (
-        <ul class="gallery">
+        <List >
             {children}
-        </ul>
+        </List>
     )
 }
