@@ -1,11 +1,12 @@
-import { Button, Form, Header, Input, Span } from "./Searchbar.styled"
+import { Button, Form, Header, Input } from "./Searchbar.styled"
+import { FcSearch } from 'react-icons/fc'
 
 export const Searchbar = ({ onSubmit, onChange }) => {
     return (
         <Header>
             <Form onSubmit={onSubmit}>
                 <Button type="submit" >
-                    <Span>Search</Span>
+                    <FcSearch />
                 </Button>
 
                 <Input

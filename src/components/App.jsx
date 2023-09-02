@@ -9,6 +9,8 @@ import { Button } from "./Button/Button.js";
 import { Loader } from "./Loader/Loader";
 import { Modal } from "./Modal/Modal";
 
+
+
 export class App extends Component {
   state = {
     page: 1,
@@ -19,7 +21,12 @@ export class App extends Component {
     loading: false,
     error: false,
     modal: false,
+
   };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handlerKeyDownModal);
+  }
 
   componentDidUpdate = async (prevProps, prevState) => {
     const { page, search } = this.state;
@@ -39,7 +46,11 @@ export class App extends Component {
     }
   };
 
-  handleSubmit = async (evt) => {
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handlerKeyDownModal);
+  };
+
+  handlerSubmit = async (evt) => {
     evt.preventDefault();
     const { search } = evt.currentTarget;
     const searchValue = search.value.trim();
@@ -55,52 +66,59 @@ export class App extends Component {
       this.setState({ error: true });
     } finally {
       this.setState({ loading: false });
-    }
+    };
     evt.target.reset();
-  }
-
-  handleClickLoad = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }))
   };
 
-  handleClickImage = (id) => {
-    const image = this.state.images.find(image => image.id === id)
-    this.setState({ image: image, modal: true });
-    console.log(image)
-  }
+  handlerClickLoad = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
+  };
 
-  handleClickModal = () => {
-    this.setState({ modal: false })
-  }
+  handlerClickImage = (id) => {
+    const image = this.state.images.find(image => image.id === id);
+    this.setState({ image: image, modal: true });
+  };
+
+  handlerClickModal = (evt) => {
+    if (evt.target === evt.currentTarget) {
+      this.setState({ modal: false });
+    };
+  };
+
+  handlerKeyDownModal = (evt) => {
+    if (evt.code === "Escape") {
+      this.setState({ modal: false });
+    };
+  };
 
   render() {
     const { images, image, page, total, loading, modal } = this.state;
 
     return (
-      <Layuot>
-        <Searchbar onSubmit={this.handleSubmit}
+      <Layuot >
+        <Searchbar onSubmit={this.handlerSubmit}
           onChange={this.handleChange} />
         <ImageGallery>
           {images.map(({ id, webformatURL, tags }) => (
             <ImageGalleryItem key={id}
               webformatURL={webformatURL}
               tags={tags}
-              onClick={this.handleClickImage}
+              onClick={this.handlerClickImage}
               id={id}
             />
           ))}
         </ImageGallery>
         {loading && <Loader />}
-        {images.length !== 0 && page < total / 12 && <Button onClick={this.handleClickLoad} />}
+        {images.length !== 0 && page < Math.ceil(total / 12) && <Button onClick={this.handlerClickLoad} />}
         {modal && <Modal
           largeImageURL={image.largeImageURL}
           tags={image.tags}
-          onClick={this.handleClickModal}
+          onClick={this.handlerClickModal}
         />}
         <GlobalStyle />
       </Layuot>
     );
-  }
+  };
 };
