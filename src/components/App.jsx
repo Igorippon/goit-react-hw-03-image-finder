@@ -4,7 +4,6 @@ import { GlobalStyle } from "./GlobalStyle";
 import { Layuot } from "./Layout";
 import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
-import { ImageGalleryItem } from "./ImageGalleryItem/ImageGalleryItem";
 import { serviceSearch } from "api";
 import { Button } from "./Button/Button.js";
 import { Loader } from "./Loader/Loader";
@@ -17,24 +16,22 @@ export class App extends Component {
     page: 1,
     query: '',
     images: [],
-    image: {},
+    image: '',
     total: 0,
     loader: false,
     modal: false,
+    tags: '',
+    randomId: ''
   };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handlerKeyDownModal);
-  }
+
 
   componentDidUpdate = async (prevProps, prevState) => {
-    const { page, query, total } = this.state;
-    const index = query.indexOf("/");
-    const queryIndex = query.slice(index + 1, query.length);
-    if (prevState.page !== page || prevState.query !== query) {
+    const { page, query, randomId, total } = this.state;
+    if (prevState.page !== page || prevState.randomId !== randomId) {
       try {
         this.setState({ loader: true });
-        const { hits, totalHits } = await serviceSearch(queryIndex, page);
+        const { hits, totalHits } = await serviceSearch(query, page);
         if (totalHits === 0) {
           toast.error('Nothing found for your request');
           return;
@@ -44,7 +41,7 @@ export class App extends Component {
         };
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
-          total: totalHits,
+          total: Math.ceil(totalHits / 12),
         }));
       } catch (error) {
         toast.error('Oops... something went wrong, please reload the page!');
@@ -55,21 +52,12 @@ export class App extends Component {
     };
   };
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handlerKeyDownModal);
-  };
-
-  handlerSubmit = async (evt) => {
-    evt.preventDefault();
-    const { search } = evt.currentTarget;
-    const searchValue = search.value.trim();
+  handlerSubmitForm = (searchValue) => {
     if (searchValue === '') {
       toast.error('Please enter search words');
       return;
     }
-
-    this.setState({ query: `${Date.now()}/${searchValue}`, page: 1, images: [], total: 0 })
-    evt.target.reset();
+    this.setState({ query: searchValue, randomId: `${Date.now()}/${searchValue}`, page: 1, images: [], total: 0 })
   };
 
   handlerClickLoadMore = () => {
@@ -78,47 +66,28 @@ export class App extends Component {
     }));
   };
 
-  handlerClickImage = (id) => {
-
-    const image = this.state.images.find(image => image.id === id);
-    this.setState({ image: image, modal: true });
+  handlerClickImage = (largeImageURL, tags) => {
+    this.toggleModal();
+    this.setState({ image: largeImageURL, tags: tags });
   };
 
-  handlerClickModal = (evt) => {
-    if (evt.target === evt.currentTarget) {
-      this.setState({ modal: false });
-    };
-  };
-
-  handlerKeyDownModal = (evt) => {
-    if (evt.code === "Escape") {
-      this.setState({ modal: false });
-    };
-  };
+  toggleModal = () => {
+    this.setState({
+      modal: !this.state.modal,
+    })
+  }
 
   render() {
-    const { images, image, page, total, loader, modal } = this.state;
+    const { images, image, page, total, loader, modal, tags } = this.state;
 
     return (
       <Layuot >
-        <Searchbar onSubmit={this.handlerSubmit} />
-        <ImageGallery>
-          {images.map(({ id, webformatURL, tags }) => (
-            <ImageGalleryItem key={id}
-              webformatURL={webformatURL}
-              tags={tags}
-              onClick={this.handlerClickImage}
-              id={id}
-            />
-          ))}
-        </ImageGallery>
+        <Searchbar onSubmit={this.handlerSubmitForm} />
+        <ImageGallery images={images}
+          onClick={this.handlerClickImage} />
         {loader && <Loader />}
-        {images.length !== 0 && page < Math.ceil(total / 12) && <Button onClick={this.handlerClickLoadMore} />}
-        {modal && <Modal
-          largeImageURL={image.largeImageURL}
-          tags={image.tags}
-          onClick={this.handlerClickModal}
-        />}
+        {images.length > 0 && page < total && <Button onClick={this.handlerClickLoadMore} />}
+        {modal && <Modal onClick={this.toggleModal} image={image} tags={tags} />}
         <GlobalStyle />
         <Toaster />
       </Layuot>
