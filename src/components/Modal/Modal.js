@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Div, Overlay } from "./Modal.styled";
 
 export const Modal = ({ largeImageURL, tags, onClick }) => {
@@ -8,4 +9,10 @@ export const Modal = ({ largeImageURL, tags, onClick }) => {
             </Div>
         </Overlay>
     );
-}; 
+};
+
+Modal.propTypes = {
+    largeImageURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
+    onClick: PropTypes.func.isRequired,
+}

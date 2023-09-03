@@ -1,4 +1,5 @@
 import { Component } from "react";
+import toast, { Toaster } from 'react-hot-toast';
 import { GlobalStyle } from "./GlobalStyle";
 import { Layuot } from "./Layout";
 import { Searchbar } from "./Searchbar/Searchbar";
@@ -14,14 +15,12 @@ import { Modal } from "./Modal/Modal";
 export class App extends Component {
   state = {
     page: 1,
-    search: '',
+    query: '',
     images: [],
     image: {},
     total: 0,
-    loading: false,
-    error: false,
+    loader: false,
     modal: false,
-
   };
 
   componentDidMount() {
@@ -29,21 +28,31 @@ export class App extends Component {
   }
 
   componentDidUpdate = async (prevProps, prevState) => {
-    const { page, search } = this.state;
-    if (prevState.page !== page) {
+    const { page, query, total } = this.state;
+    const index = query.indexOf("/");
+    const queryIndex = query.slice(index + 1, query.length);
+    if (prevState.page !== page || prevState.query !== query) {
       try {
-        this.setState({ loading: true, error: false });
-        const { hits } = await serviceSearch(search, page);
+        this.setState({ loader: true });
+        const { hits, totalHits } = await serviceSearch(queryIndex, page);
+        if (totalHits === 0) {
+          toast.error('Nothing found for your request');
+          return;
+        };
+        if (prevState.total !== total) {
+          toast.success(`Hooray! We found ${totalHits} images.`);
+        };
         this.setState(prevState => ({
           images: [...prevState.images, ...hits],
-        }))
+          total: totalHits,
+        }));
       } catch (error) {
-        this.setState({ error: true });
+        toast.error('Oops... something went wrong, please reload the page!');
       } finally {
-        this.setState({ loading: false });
-      }
+        this.setState({ loader: false });
+      };
 
-    }
+    };
   };
 
   componentWillUnmount() {
@@ -54,29 +63,23 @@ export class App extends Component {
     evt.preventDefault();
     const { search } = evt.currentTarget;
     const searchValue = search.value.trim();
-    try {
-      this.setState({ loading: true, error: false });
-      const { hits, totalHits } = await serviceSearch(searchValue, this.state.page = 1);
-      this.setState({
-        images: hits,
-        search: searchValue,
-        total: totalHits,
-      })
-    } catch (error) {
-      this.setState({ error: true });
-    } finally {
-      this.setState({ loading: false });
-    };
+    if (searchValue === '') {
+      toast.error('Please enter search words');
+      return;
+    }
+
+    this.setState({ query: `${Date.now()}/${searchValue}`, page: 1, images: [], total: 0 })
     evt.target.reset();
   };
 
-  handlerClickLoad = () => {
+  handlerClickLoadMore = () => {
     this.setState(prevState => ({
       page: prevState.page + 1,
     }));
   };
 
   handlerClickImage = (id) => {
+
     const image = this.state.images.find(image => image.id === id);
     this.setState({ image: image, modal: true });
   };
@@ -94,12 +97,11 @@ export class App extends Component {
   };
 
   render() {
-    const { images, image, page, total, loading, modal } = this.state;
+    const { images, image, page, total, loader, modal } = this.state;
 
     return (
       <Layuot >
-        <Searchbar onSubmit={this.handlerSubmit}
-          onChange={this.handleChange} />
+        <Searchbar onSubmit={this.handlerSubmit} />
         <ImageGallery>
           {images.map(({ id, webformatURL, tags }) => (
             <ImageGalleryItem key={id}
@@ -110,14 +112,15 @@ export class App extends Component {
             />
           ))}
         </ImageGallery>
-        {loading && <Loader />}
-        {images.length !== 0 && page < Math.ceil(total / 12) && <Button onClick={this.handlerClickLoad} />}
+        {loader && <Loader />}
+        {images.length !== 0 && page < Math.ceil(total / 12) && <Button onClick={this.handlerClickLoadMore} />}
         {modal && <Modal
           largeImageURL={image.largeImageURL}
           tags={image.tags}
           onClick={this.handlerClickModal}
         />}
         <GlobalStyle />
+        <Toaster />
       </Layuot>
     );
   };

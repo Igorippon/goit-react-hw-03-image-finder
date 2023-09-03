@@ -8,4 +8,5 @@ align-items: center;
 gap: 20px;
 margin: 0 auto;
 padding:20px;
+padding-bottom:40px;
 `;
