@@ -1,6 +1,5 @@
 import { Component } from "react";
-import toast, { Toaster } from 'react-hot-toast';
-import { GlobalStyle } from "./GlobalStyle";
+import toast from 'react-hot-toast';
 import { Layuot } from "./Layout";
 import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
@@ -53,7 +52,6 @@ export class App extends Component {
   };
 
   handlerSubmitForm = (searchValue) => {
-
     this.setState({ query: searchValue, randomId: `${Date.now()}/${searchValue}`, page: 1, images: [], total: 0 })
   };
 
@@ -85,8 +83,6 @@ export class App extends Component {
         {loader && <Loader />}
         {images.length > 0 && page < total && <Button onClick={this.handlerClickLoadMore} />}
         {modal && <Modal onClick={this.toggleModal} image={image} tags={tags} />}
-        <GlobalStyle />
-        <Toaster />
       </Layuot>
     );
   };
