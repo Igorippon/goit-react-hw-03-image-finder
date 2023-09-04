@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Button, Form, Header, Input } from "./Searchbar.styled"
 import { FcSearch } from 'react-icons/fc';
 import { Component } from 'react';
+import toast from 'react-hot-toast';
 
 export class Searchbar extends Component {
 
@@ -9,6 +10,10 @@ export class Searchbar extends Component {
         evt.preventDefault();
         const { search } = evt.currentTarget;
         const searchValue = search.value.trim();
+        if (searchValue === '') {
+            toast.error('Please enter search words');
+            return;
+        }
         this.props.onSubmit(searchValue);
         evt.target.reset();
     };

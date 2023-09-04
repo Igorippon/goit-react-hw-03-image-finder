@@ -53,10 +53,7 @@ export class App extends Component {
   };
 
   handlerSubmitForm = (searchValue) => {
-    if (searchValue === '') {
-      toast.error('Please enter search words');
-      return;
-    }
+
     this.setState({ query: searchValue, randomId: `${Date.now()}/${searchValue}`, page: 1, images: [], total: 0 })
   };
 
